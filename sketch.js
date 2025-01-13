@@ -1,72 +1,75 @@
-let song; // Para la música
-let handposeModel; // Modelo de Handpose
-let video; // Elemento de video
-let predictions = []; // Para almacenar las predicciones de Handpose
+// Declaración de variables globales
+let song; // Para almacenar y controlar la música que se reproducirá
+let handposeModel; // Modelo de detección de manos (Handpose)
+let video; // Elemento de video para capturar la entrada de la cámara
+let predictions = []; // Lista para almacenar las predicciones del modelo Handpose
 
+// Función que precarga recursos antes de iniciar el programa
 function preload() {
-  // Carga un archivo de audio en la carpeta "assets"
-  song = loadSound("assets/song.mp3");
+  // Carga un archivo de audio desde la carpeta "assets"
+  song = loadSound("assets/song.mp3", () => {
+    console.log("Audio cargado correctamente");
+  });
 }
 
+// Función que se ejecuta una vez al iniciar el programa
 function setup() {
-  // Crea el lienzo de p5.js
+  // Crea un lienzo de p5.js con tamaño 640x480
   const canvas = createCanvas(640, 480);
-  canvas.parent("canvas-container");
+  canvas.parent("canvas-container"); // Asocia el lienzo a un contenedor HTML
 
-  // Inicializa el video y el modelo de Handpose
+  // Captura el video desde la cámara
   video = createCapture(VIDEO, () => {
     console.log("Video cargado correctamente");
   });
-  video.size(width, height);
-  video.hide(); // Oculta el video en la página
+  video.size(width, height); // Ajusta el tamaño del video al del lienzo
+  video.hide(); // Oculta la visualización del video en la página
 
+  // Inicializa el modelo de Handpose con el video como entrada
   handposeModel = ml5.handpose(video, () => {
     console.log("Modelo Handpose cargado");
   });
 
+  // Evento que se activa cada vez que el modelo genera predicciones
   handposeModel.on("predict", (results) => {
-    predictions = results;
+    predictions = results; // Almacena las predicciones en la variable global
   });
 
-  song.loop(); // Reproduce la canción en bucle
+  // Configura la música para que se reproduzca en bucle
+  song.loop();
 }
 
+// Función que se ejecuta continuamente para renderizar el lienzo
 function draw() {
-  background(30);
+  background(30); // Establece un fondo oscuro
 
-  // Dibuja el video en el lienzo
+  // Dibuja el video capturado en el lienzo
   image(video, 0, 0, width, height);
 
-  // Si hay predicciones de las manos, procesa el control de la música
+  // Verifica si hay predicciones (manos detectadas)
   if (predictions.length > 0) {
     const hand = predictions[0]; // Toma la primera mano detectada
 
-    // Dibuja los puntos de la mano en pantalla
+    // Dibuja los puntos clave de la mano en el lienzo
     hand.landmarks.forEach((point) => {
-      fill(0, 255, 0);
-      noStroke();
-      ellipse(point[0], point[1], 10, 10);
+      fill(0, 255, 0); // Color verde para los puntos
+      noStroke(); // Sin borde en los puntos
+      ellipse(point[0], point[1], 10, 10); // Dibuja un círculo en cada punto
     });
 
-    // Controla el volumen con la posición Y de la palma (landmark[9])
-    const palmY = hand.landmarks[9][1];
-    const volume = map(palmY, 0, height, 1, 0); // Mapea Y a volumen (0-1)
-    song.setVolume(volume);
+    // Controla el volumen de la música según la posición Y de la palma
+    const palmY = hand.landmarks[9][1]; // Coordenada Y del punto 9 (palma)
+    const volume = map(palmY, 0, height, 1, 0); // Mapea la posición Y a un rango de volumen (0-1)
+    song.setVolume(volume); // Ajusta el volumen de la música
 
-    // Cambia de pista con movimientos horizontales (landmark[9])
-    const palmX = hand.landmarks[9][0];
+    // Detecta movimientos horizontales para cambiar de pista
+    const palmX = hand.landmarks[9][0]; // Coordenada X del punto 9 (palma)
     if (palmX < width / 4) {
-      // Aquí podrías cambiar a una pista anterior
+      // Movimiento hacia la izquierda: cambiar a la pista anterior
       console.log("Movimiento a la izquierda - Cambiar a pista anterior");
     } else if (palmX > (3 * width) / 4) {
-      // Aquí podrías cambiar a una pista siguiente
+      // Movimiento hacia la derecha: cambiar a la pista siguiente
       console.log("Movimiento a la derecha - Cambiar a pista siguiente");
     }
   }
-}
-
-function preload() {
-  song = loadSound("assets/song.mp3", () => {
-    console.log("Audio cargado correctamente");
-  });
 }

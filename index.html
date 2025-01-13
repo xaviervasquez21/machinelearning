@@ -5,17 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DJ Virtual</title>
     <link rel="stylesheet" href="style.css" />
-    <!-- Incluye las bibliotecas de p5.js y ml5.js en el orden correcto -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ml5@0.12.2/dist/ml5.min.js"></script>
   </head>
+
   <body>
-    <h1>DJ Virtual</h1>
-    <p>
-      Mueve tu mano arriba/abajo para cambiar el volumen y hacia los lados para
-      cambiar pistas.
-    </p>
-    <div id="canvas-container"></div>
+    <header>
+      <h1>DJ Virtual</h1>
+    </header>
+
+    <main>
+      <!-- Descripción del proyecto -->
+      <section id="project-description">
+        <h2>Sobre el proyecto</h2>
+        <p>
+          Como bailarín, la música es una parte esencial de mi vida,
+          especialmente durante los ensayos. Sin embargo, manipular los
+          dispositivos electrónicos puede resultar incómodo debido al sudor y la
+          constante necesidad de pausar para ajustar el volumen o cambiar de
+          pista.
+        </p>
+        <p>
+          Por eso, desarrollé este programa que utiliza la detección de manos
+          mediante la cámara para controlar la música. Con gestos simples,
+          puedes ajustar el volumen (moviendo la mano arriba o abajo) o cambiar
+          de pista (moviendo la mano hacia los lados), sin necesidad de tocar
+          ningún dispositivo.
+        </p>
+        <p>
+          Este sistema no solo mejora la comodidad y fluidez durante los
+          ensayos, sino que también ofrece una experiencia interactiva e
+          innovadora para cualquier amante de la música y el movimiento.
+        </p>
+      </section>
+
+      <!-- Instrucciones para los usuarios -->
+      <section id="instructions">
+        <h2>Instrucciones</h2>
+        <ul>
+          <li>
+            <strong>Subir o bajar el volumen:</strong> Mueve tu mano hacia
+            arriba o abajo frente a la cámara.
+          </li>
+          <li>
+            <strong>Cambiar de pista:</strong> Desplaza tu mano hacia la
+            izquierda o la derecha frente a la cámara.
+          </li>
+        </ul>
+      </section>
+
+      <!-- Contenedor del lienzo -->
+      <div id="canvas-container"></div>
+    </main>
+    <footer>
+      <p>Desarrollado con p5.js y ml5.js para una experiencia interactiva.</p>
+    </footer>
+
+    <!-- Archivo JavaScript principal -->
     <script src="sketch.js"></script>
   </body>
 </html>
