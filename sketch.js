@@ -1,15 +1,23 @@
 // Declaración de variables globales
-let song; // Para almacenar y controlar la música que se reproducirá
+let songs = []; // Array para almacenar y controlar las canciones
 let handposeModel; // Modelo de detección de manos (Handpose)
 let video; // Elemento de video para capturar la entrada de la cámara
 let predictions = []; // Lista para almacenar las predicciones del modelo Handpose
+let currentSongIndex = 0; // Índice de la canción actual
+let isPlaying = false; // Estado de la música (reproduciendo o pausado)
+let gestureCooldown = false; // Control para evitar detecciones redundantes
+let lastGestureTime = 0; // Registro del último gesto detectado
 
 // Función que precarga recursos antes de iniciar el programa
 function preload() {
-  // Carga un archivo de audio desde la carpeta "assets"
-  song = loadSound("assets/song.mp3", () => {
-    console.log("Audio cargado correctamente");
-  });
+  const songCount = 3; // Número de canciones
+  for (let i = 0; i < songCount; i++) {
+    songs[i] = loadSound(
+      `assets/song${i + 1}.mp3`,
+      () => console.log(`Canción ${i + 1} cargada`),
+      () => console.error(`Error al cargar canción ${i + 1}`)
+    );
+  }
 }
 
 // Función que se ejecuta una vez al iniciar el programa
@@ -34,9 +42,44 @@ function setup() {
   handposeModel.on("predict", (results) => {
     predictions = results; // Almacena las predicciones en la variable global
   });
+}
 
-  // Configura la música para que se reproduzca en bucle
-  song.loop();
+// Función para verificar si todos los dedos están abiertos
+function isAllFingersOpen(hand) {
+  const palm = hand.landmarks[9];
+  const threshold = 60; // Umbral para determinar si los dedos están abiertos
+
+  return [4, 8, 12, 16, 20].every((i) => {
+    const fingerTip = hand.landmarks[i];
+    return dist(fingerTip[0], fingerTip[1], palm[0], palm[1]) > threshold;
+  });
+}
+
+// Función para detectar gestos y controlar la música
+function detectGesture(hand) {
+  const currentTime = millis();
+
+  if (gestureCooldown) return;
+
+  if (isAllFingersOpen(hand)) {
+    if (currentTime - lastGestureTime > 3000) {
+      // 3 segundos de espera
+      if (!isPlaying) {
+        songs[currentSongIndex].play();
+        isPlaying = true;
+        console.log("Todos los dedos abiertos - Música iniciada");
+      } else {
+        songs[currentSongIndex].pause();
+        isPlaying = false;
+        console.log("Todos los dedos abiertos nuevamente - Música pausada");
+      }
+      lastGestureTime = currentTime;
+    }
+
+    // Activar cooldown para evitar repeticiones rápidas
+    gestureCooldown = true;
+    setTimeout(() => (gestureCooldown = false), 500); // 500ms de espera
+  }
 }
 
 // Función que se ejecuta continuamente para renderizar el lienzo
@@ -57,19 +100,47 @@ function draw() {
       ellipse(point[0], point[1], 10, 10); // Dibuja un círculo en cada punto
     });
 
-    // Controla el volumen de la música según la posición Y de la palma
-    const palmY = hand.landmarks[9][1]; // Coordenada Y del punto 9 (palma)
-    const volume = map(palmY, 0, height, 1, 0); // Mapea la posición Y a un rango de volumen (0-1)
-    song.setVolume(volume); // Ajusta el volumen de la música
-
-    // Detecta movimientos horizontales para cambiar de pista
-    const palmX = hand.landmarks[9][0]; // Coordenada X del punto 9 (palma)
-    if (palmX < width / 4) {
-      // Movimiento hacia la izquierda: cambiar a la pista anterior
-      console.log("Movimiento a la izquierda - Cambiar a pista anterior");
-    } else if (palmX > (3 * width) / 4) {
-      // Movimiento hacia la derecha: cambiar a la pista siguiente
-      console.log("Movimiento a la derecha - Cambiar a pista siguiente");
-    }
+    // Detecta gestos para controlar la música
+    detectGesture(hand);
+  } else {
+    // Mensaje si no hay manos detectadas
+    fill(255);
+    textSize(16);
+    textAlign(CENTER);
+    text("No se detectan manos", width / 2, height - 20);
   }
+
+  // Dibuja el estado actual de la música en el lienzo
+  drawState();
+}
+
+// Función para mostrar el estado actual de la música
+function drawState() {
+  fill(255);
+  textSize(24);
+  textAlign(CENTER);
+  if (isPlaying) {
+    text("Reproduciendo", width / 2, 30);
+  } else {
+    text("Pausado", width / 2, 30);
+  }
+}
+
+// Función para cambiar la canción
+function changeSong(direction) {
+  // Detiene la canción actual
+  songs[currentSongIndex].stop();
+
+  // Calcula el nuevo índice de la canción
+  currentSongIndex += direction;
+
+  // Asegura que el índice esté dentro de los límites
+  if (currentSongIndex < 0) {
+    currentSongIndex = songs.length - 1; // Última canción si se va hacia la izquierda
+  } else if (currentSongIndex >= songs.length) {
+    currentSongIndex = 0; // Primera canción si se va hacia la derecha
+  }
+
+  // Reproduce la nueva canción
+  songs[currentSongIndex].loop();
 }
