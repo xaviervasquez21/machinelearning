@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DJ Virtual</title>
     <link rel="stylesheet" href="style.css" />
-
-    <!-- Favicon (opcional) -->
-    <link rel="icon" href="favicon.ico" type="image/x-icon" />
-
-    <!-- Bibliotecas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ml5@0.12.2/dist/ml5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.2/addons/p5.sound.js"></script>
@@ -21,79 +16,28 @@
     </header>
 
     <main>
-      <section id="project-description">
-        <h2>Sobre el proyecto</h2>
-        <p>
-          Este programa utiliza detección de manos para controlar la música de
-          forma interactiva. Puedes pausar, reproducir, cambiar canciones y
-          ajustar el volumen con gestos simples.
-        </p>
-      </section>
-
       <section id="instructions">
         <h2>Instrucciones</h2>
         <ul>
           <li>
             <strong>Pausar/Reproducir:</strong> Mantén tu palma abierta hacia la
-            cámara durante al menos 3 segundos para alternar entre pausar y
-            reproducir la música.
+            cámara por 3 segundos cuando esté naranja.
           </li>
           <li>
-            <strong>Subir el volumen:</strong> Mueve tu mano hacia arriba de
-            manera vertical mientras mantienes los dedos extendidos.
+            <strong>Subir volumen:</strong> Mueve tu mano hacia arriba hasta que
+            se haga verde.
           </li>
           <li>
-            <strong>Bajar el volumen:</strong> Mueve tu mano hacia abajo de
-            manera vertical mientras mantienes los dedos extendidos.
+            <strong>Bajar volumen:</strong> Mueve tu mano hacia abajo hasta que
+            se haga verde.
           </li>
           <li>
-            <strong>Cambiar a la siguiente canción:</strong> Mueve tu mano hacia
-            la derecha de manera horizontal.
+            <strong>Cambiar canción:</strong> Mueve tu mano hacia la derecha
+            hasta que se haga azul.
           </li>
           <li>
-            <strong>Volver a la canción anterior:</strong> Mueve tu mano hacia
-            la izquierda de manera horizontal.
-          </li>
-          <li>
-            <strong>Estado de detección:</strong> Asegúrate de que tu mano esté
-            visible en la cámara para que los gestos sean detectados
-            correctamente.
-          </li>
-        </ul>
-      </section>
-
-      <section id="tips">
-        <h2>Consejos útiles</h2>
-        <ul>
-          <li>
-            Coloca tu mano a una distancia adecuada de la cámara para mejorar la
-            precisión de detección.
-          </li>
-          <li>
-            Evita movimientos rápidos o bruscos; los gestos deben ser claros y
-            definidos.
-          </li>
-          <li>
-            Asegúrate de que la iluminación sea suficiente para que la cámara
-            pueda detectar tu mano con claridad.
-          </li>
-        </ul>
-      </section>
-
-      <section id="troubleshooting">
-        <h2>Solución de problemas</h2>
-        <ul>
-          <li>
-            Si el programa no detecta tu mano, verifica que la cámara esté
-            funcionando correctamente.
-          </li>
-          <li>
-            Si la música no suena, asegúrate de que los archivos de audio estén
-            en la carpeta correcta y que el volumen esté ajustado.
-          </li>
-          <li>
-            Actualiza tu navegador a la última versión si experimentas problemas
-            de compatibilidad.
+            <strong>Volver a canción anterior:</strong> Mueve tu mano hacia la
+            izquierda hasta que se haga azul.
           </li>
         </ul>
       </section>
@@ -102,7 +46,7 @@
     </main>
 
     <footer>
-      <p>Desarrollado con p5.js y ml5.js para una experiencia interactiva.</p>
+      <p>Desarrollado con p5.js y ml5.js.</p>
     </footer>
 
     <script src="sketch.js"></script>
