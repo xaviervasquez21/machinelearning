@@ -14,9 +14,10 @@ let openPalmTimer = 0; // Temporizador para la palma abierta
 let palmOpen = false; // Estado actual de la palma abierta
 
 function preload() {
-  songs.push(loadSound("assets/song1.mp3"));
-  songs.push(loadSound("assets/song2.mp3"));
-  songs.push(loadSound("assets/song3.mp3"));
+  for (let i = 1; i <= 3; i++) {
+    // Cambia 3 por el número total de canciones
+    songs.push(loadSound(`assets/song${i}.mp3`));
+  }
 }
 
 function setup() {
@@ -49,42 +50,65 @@ function draw() {
   image(video, 0, 0, width, height);
 
   if (hands.length > 0) {
-    let hand = hands[0];
-    let landmarks = hand.landmarks;
-
-    if (prevPositions.length === 0) {
-      prevPositions = landmarks.map((p) => ({ x: p[0], y: p[1] }));
-    }
-
-    palmOpen = detectOpenPalm(landmarks); // Detectar si la palma está abierta
-
-    if (palmOpen) {
-      openPalmTimer += deltaTime / 1000; // Incrementar el temporizador
-      if (openPalmTimer >= 3) {
-        toggleMusic(); // Cambiar entre pausa y reproducción
-        openPalmTimer = 0; // Reiniciar el temporizador
+    hands.forEach((hand) => {
+      let landmarks = hand.landmarks;
+      if (prevPositions.length === 0) {
+        prevPositions = landmarks.map((p) => ({ x: p[0], y: p[1] }));
       }
-    } else {
-      openPalmTimer = 0; // Reiniciar el temporizador si no hay palma abierta
-    }
 
-    let movementType = detectMovement(landmarks);
+      let movementType = detectMovement(landmarks);
 
-    for (let i = 0; i < landmarks.length; i++) {
-      let x = landmarks[i][0];
-      let y = landmarks[i][1];
-      fill(...actionColor);
-      noStroke();
-      ellipse(x, y, 10, 10);
-    }
+      for (let i = 0; i < landmarks.length; i++) {
+        let x = landmarks[i][0];
+        let y = landmarks[i][1];
+        fill(...actionColor);
+        noStroke();
+        ellipse(x, y, 10, 10);
+      }
 
-    prevPositions = landmarks.map((p) => ({ x: p[0], y: p[1] }));
+      prevPositions = landmarks.map((p) => ({ x: p[0], y: p[1] }));
+    });
   } else {
     idleTimer = 0;
     prevPositions = [];
   }
 
   displayInfo();
+}
+
+function detectMovement(landmarks) {
+  let handCenterY = landmarks[0][1]; // Coordenada Y del punto base de la mano
+
+  let upperThreshold = height / 3; // Umbral para la parte superior
+  let lowerThreshold = (2 * height) / 3; // Umbral para la parte inferior
+
+  if (handCenterY < upperThreshold) {
+    changeVolume("up");
+    actionColor = [255, 255, 0]; // Amarillo al subir volumen
+    return "volume-up";
+  } else if (handCenterY > lowerThreshold) {
+    changeVolume("down");
+    actionColor = [255, 255, 0]; // Amarillo al bajar volumen
+    return "volume-down";
+  } else if (detectOpenPalm(landmarks)) {
+    openPalmTimer += deltaTime / 1000; // Incrementar temporizador
+    if (openPalmTimer >= 2) {
+      // Cambiar después de 2 segundos
+      if (palmOpen) {
+        toggleMusic();
+        openPalmTimer = 0; // Reiniciar temporizador
+      }
+    }
+    palmOpen = true; // Estado de palma abierta activo
+    actionColor = [0, 255, 0]; // Verde para play/pausa
+    return "toggle-music";
+  } else {
+    openPalmTimer = 0; // Reiniciar si no se detecta palma abierta
+    palmOpen = false; // Desactivar estado de palma abierta
+  }
+
+  actionColor = [255, 165, 0]; // Naranja por defecto
+  return "none";
 }
 
 function detectOpenPalm(landmarks) {
@@ -102,64 +126,6 @@ function detectOpenPalm(landmarks) {
   // Umbral para considerar la palma como abierta
   let openThreshold = 100;
   return distances.every((d) => d > openThreshold);
-}
-
-function detectMovement(landmarks) {
-  let totalMovementX = 0;
-  let totalMovementY = 0;
-
-  for (let i = 0; i < landmarks.length; i++) {
-    let x = landmarks[i][0];
-    let y = landmarks[i][1];
-    let prevX = prevPositions[i]?.x || 0;
-    let prevY = prevPositions[i]?.y || 0;
-    totalMovementX += x - prevX;
-    totalMovementY += y - prevY;
-  }
-
-  let threshold = 5; // Umbral para movimientos verticales
-  let sideMovementThreshold = 50;
-  let sideMovementTimeThreshold = 1000;
-
-  // Detectar movimiento vertical para ajustar volumen
-  if (
-    abs(totalMovementY) > threshold &&
-    abs(totalMovementY) > abs(totalMovementX)
-  ) {
-    if (totalMovementY < -threshold) {
-      changeVolume("up");
-    } else if (totalMovementY > threshold) {
-      changeVolume("down");
-    }
-    return "up-down";
-  }
-  // Detectar cambio de canción
-  else if (totalMovementX > sideMovementThreshold) {
-    sideMovementTimer += deltaTime;
-    if (sideMovementTimer >= sideMovementTimeThreshold) {
-      changeSong("next");
-      sideMovementTimer = 0;
-      actionColor = [0, 0, 255];
-      return "change-song";
-    }
-    return "right";
-  } else if (totalMovementX < -sideMovementThreshold) {
-    sideMovementTimer += deltaTime;
-    if (sideMovementTimer >= sideMovementTimeThreshold) {
-      changeSong("prev");
-      sideMovementTimer = 0;
-      actionColor = [0, 0, 255];
-      return "change-song";
-    }
-    return "left";
-  } else {
-    sideMovementTimer = 0;
-    idleTimer += deltaTime / 1000;
-    return "idle";
-  }
-
-  actionColor = [255, 165, 0];
-  return "none";
 }
 
 function changeVolume(direction) {
@@ -189,6 +155,7 @@ function changeSong(direction) {
   currentSong = songs[songIndex];
   if (!isPaused) currentSong.play(); // Reproducir solo si no está en pausa
   currentSong.setVolume(volume);
+  actionColor = [0, 0, 255]; // Azul al cambiar canción
   console.log("Cargando y reproduciendo canción:", songs[songIndex].url);
 }
 
@@ -217,5 +184,4 @@ function displayInfo() {
   text("Volumen: " + Math.round(volume * 100) + "%", 10, height - 70);
   text("Canción: " + (songIndex + 1), 10, height - 50);
   text("Mano detectada: " + (hands.length > 0 ? "Sí" : "No"), 10, height - 30);
-  text("Palma abierta: " + (palmOpen ? "Sí" : "No"), 10, height - 10);
 }
